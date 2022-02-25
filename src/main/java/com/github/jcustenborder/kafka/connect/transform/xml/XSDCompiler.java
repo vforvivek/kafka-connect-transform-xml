@@ -116,7 +116,7 @@ public class XSDCompiler implements Closeable {
 
     List<File> sourceFiles =
         StreamSupport.stream(
-            Files.fileTraverser().depthFirstPostOrder(tempDirectory).spliterator(),
+            Files.fileTraverser().breadthFirst(tempDirectory).spliterator(),
             false
         )
             .filter(File::isFile)
@@ -154,7 +154,7 @@ public class XSDCompiler implements Closeable {
           compilationUnit);
 
       log.info("Compiling...");
-      if (!compilerTask.call()) {
+      if (Boolean.FALSE.equals(compilerTask.call())) {
         log.error("Exception while compiling source.");
         for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
           log.error(
@@ -195,65 +195,7 @@ public class XSDCompiler implements Closeable {
 
   @Override
   public void close() throws IOException {
-//    log.trace("close() - Cleaning up temp directory '{}'", this.tempDirectory);
-//    java.nio.file.Files.walkFileTree(this.tempDirectory.toPath(), new SimpleFileVisitor<Path>() {
-//      @Override
-//      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-//        log.trace("close() - Deleting {}", file);
-//        java.nio.file.Files.delete(file);
-//        return FileVisitResult.CONTINUE;
-//      }
-//
-//      @Override
-//      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-//        log.trace("close() - Deleting {}", dir);
-//        java.nio.file.Files.delete(dir);
-//        return FileVisitResult.CONTINUE;
-//      }
-//    });
+    // noop
   }
 
-//  static class SchemaState {
-//    final URL url;
-//    final byte[] content;
-//    final String packageName;
-//
-//    SchemaState(URL url, byte[] content, String packageName) {
-//      this.url = url;
-//      this.content = content;
-//      this.packageName = packageName;
-//    }
-//
-//    public static SchemaState of(URL url, byte[] content, String packageName) {
-//      return new SchemaState(url, content, packageName);
-//    }
-//
-//    public String packageName() {
-//      return this.packageName;
-//    }
-//
-//    public String objectFactoryClass() {
-//      return String.format("%s.ObjectFactory", packageName());
-//    }
-//  }
-
-
-//  public static XSDCompiler create(FromXmlConfig config) {
-//    List<SchemaState> schemas = new ArrayList<>();
-//    for (URL url : config.schemaUrls) {
-//      log.info("Loading schema from {}", url);
-//      final byte[] buffer;
-//      try (InputStream inputStream = url.openStream()) {
-//        buffer = ByteStreams.toByteArray(inputStream);
-//      } catch (IOException e) {
-//        throw new IllegalStateException(
-//            String.format("Exception thrown while loading schema. Url='{}'", url),
-//            e
-//        );
-//      }
-//      schemas.add(SchemaState.of(url, buffer, config.xjcPackage));
-//    }
-//
-//    return new XSDCompiler(ImmutableList.copyOf(schemas));
-//  }
 }
