@@ -22,16 +22,25 @@ import com.github.jcustenborder.kafka.connect.utils.transformation.BaseKeyValueT
 import com.github.jcustenborder.kafka.connect.xml.Connectable;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.ConnectRecord;
+import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.DataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +61,9 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
   FromXmlConfig config;
   JAXBContext context;
   Unmarshaller unmarshaller;
+  Marshaller marshaller;
   XSDCompiler compiler;
+  String evaluatedKey;
 
   protected FromXml(boolean isKey) {
     super(isKey);
@@ -73,29 +84,48 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
   }
 
   @Override
-  protected SchemaAndValue processString(R record, org.apache.kafka.connect.data.Schema inputSchema, String input) {
+  protected SchemaAndValue processString(R processingRecord, org.apache.kafka.connect.data.Schema inputSchema, String input) {
     try (Reader reader = new StringReader(input)) {
       Object element = this.unmarshaller.unmarshal(reader);
       return schemaAndValue(element);
-    } catch (IOException | JAXBException e) {
+    } catch (IOException | JAXBException | XPathExpressionException e) {
       throw new DataException("Exception thrown while processing xml", e);
     }
   }
 
   @Override
-  protected SchemaAndValue processBytes(R record, org.apache.kafka.connect.data.Schema inputSchema, byte[] input) {
+  protected SchemaAndValue processBytes(R processingRecord, org.apache.kafka.connect.data.Schema inputSchema, byte[] input) {
     try (InputStream inputStream = new ByteArrayInputStream(input)) {
       try (Reader reader = new InputStreamReader(inputStream)) {
         Object element = this.unmarshaller.unmarshal(reader);
         return schemaAndValue(element);
       }
-    } catch (IOException | JAXBException e) {
+    } catch (IOException | JAXBException | XPathExpressionException e) {
       throw new DataException("Exception thrown while processing xml", e);
     }
   }
 
-  private SchemaAndValue schemaAndValue(Object element) {
+  private SchemaAndValue schemaAndValue(Object element) throws XPathExpressionException {
     final Struct struct;
+    this.evaluatedKey = null;
+
+    try {
+      DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder domBuilder = domFactory.newDocumentBuilder();
+      Document doc = domBuilder.newDocument();
+      this.marshaller.marshal(element, doc);
+
+      XPathFactory factory = XPathFactory.newInstance();
+      XPath xpath = factory.newXPath();
+
+      this.evaluatedKey = (String) xpath.evaluate(
+              config.xpathForRecordKey,
+              doc, XPathConstants.STRING);
+
+    } catch (Exception e) {
+      log.error("Error while extracting key via xpath", e);
+    }
+
     if (element instanceof Connectable) {
       Connectable connectable = (Connectable) element;
       struct = connectable.toStruct();
@@ -134,6 +164,7 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
 
     try {
       this.unmarshaller = context.createUnmarshaller();
+      this.marshaller = context.createMarshaller();
     } catch (JAXBException e) {
       throw new IllegalStateException(e);
     }
@@ -170,11 +201,12 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
     public R apply(R r) {
       final SchemaAndValue transformed = process(r, new SchemaAndValue(r.valueSchema(), r.value()));
 
+
       return r.newRecord(
           r.topic(),
           r.kafkaPartition(),
-          r.keySchema(),
-          r.key(),
+          Schema.STRING_SCHEMA,
+          this.evaluatedKey,
           transformed.schema(),
           transformed.value(),
           r.timestamp()
