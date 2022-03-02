@@ -73,10 +73,10 @@ class FromXmlTest {
     assertThat(book).hasSize(2);
 
     Struct book1 = (Struct) book.get(0);
-    assertThat(book1.toString()).hasToString("Struct{author=Writer,title=The First Book,genre=Fiction,price=44.95,pub_date=Sun Oct 01 00:00:00 CEST 2000,review=An amazing story of nothing.,id=bk001}");
+    assertThat(book1.toString()).hasToString("Struct{author=Writer,title=The First Book,genre=Fiction,price=44.95,pub_date=Sun Oct 01 00:00:00 UTC 2000,review=An amazing story of nothing.,id=bk001}");
 
     Struct book2 = (Struct) book.get(1);
-    assertThat(book2.toString()).hasToString("Struct{author=Poet,title=The Poet's First Poem,genre=Poem,price=24.95,pub_date=Sun Oct 01 00:00:00 CEST 2000,review=Least poetic poems.,id=bk002}");
+    assertThat(book2.toString()).hasToString("Struct{author=Poet,title=The Poet's First Poem,genre=Poem,price=24.95,pub_date=Sun Oct 01 00:00:00 UTC 2000,review=Least poetic poems.,id=bk002}");
 
     assertThat(record.key()).isEqualTo("WriterThe First Book");
 
