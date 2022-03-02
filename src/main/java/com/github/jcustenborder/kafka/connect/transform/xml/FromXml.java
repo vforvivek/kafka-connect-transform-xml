@@ -39,7 +39,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -88,7 +87,7 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
     try (Reader reader = new StringReader(input)) {
       Object element = this.unmarshaller.unmarshal(reader);
       return schemaAndValue(element);
-    } catch (IOException | JAXBException | XPathExpressionException e) {
+    } catch (IOException | JAXBException e) {
       throw new DataException("Exception thrown while processing xml", e);
     }
   }
@@ -100,31 +99,36 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
         Object element = this.unmarshaller.unmarshal(reader);
         return schemaAndValue(element);
       }
-    } catch (IOException | JAXBException | XPathExpressionException e) {
+    } catch (IOException | JAXBException e) {
       throw new DataException("Exception thrown while processing xml", e);
     }
   }
 
-  private SchemaAndValue schemaAndValue(Object element) throws XPathExpressionException {
+  private void extractKeyByXpath(Object element) {
+    if (null != config.xpathForRecordKey) {
+      try {
+        DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder domBuilder = domFactory.newDocumentBuilder();
+        Document doc = domBuilder.newDocument();
+        this.marshaller.marshal(element, doc);
+
+        XPathFactory factory = XPathFactory.newInstance();
+        XPath xpath = factory.newXPath();
+
+        this.evaluatedKey = (String) xpath.evaluate(
+                config.xpathForRecordKey,
+                doc, XPathConstants.STRING);
+
+      } catch (Exception e) {
+        log.error("Error while extracting key via xpath", e);
+      }
+    }
+  }
+
+  private SchemaAndValue schemaAndValue(Object element) {
     final Struct struct;
     this.evaluatedKey = null;
-
-    try {
-      DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder domBuilder = domFactory.newDocumentBuilder();
-      Document doc = domBuilder.newDocument();
-      this.marshaller.marshal(element, doc);
-
-      XPathFactory factory = XPathFactory.newInstance();
-      XPath xpath = factory.newXPath();
-
-      this.evaluatedKey = (String) xpath.evaluate(
-              config.xpathForRecordKey,
-              doc, XPathConstants.STRING);
-
-    } catch (Exception e) {
-      log.error("Error while extracting key via xpath", e);
-    }
+    this.extractKeyByXpath(element);
 
     if (element instanceof Connectable) {
       Connectable connectable = (Connectable) element;
