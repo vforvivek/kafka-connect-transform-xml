@@ -18,13 +18,18 @@ package com.github.jcustenborder.kafka.connect.transform.xml;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import org.apache.kafka.connect.connector.ConnectRecord;
+import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.util.Date;
 
@@ -37,7 +42,9 @@ public class FromXmlTest {
     File file = new File("src/test/resources/com/github/jcustenborder/kafka/connect/transform/xml/books.xsd");
     this.transform = new FromXml.Value();
     this.transform.configure(
-        ImmutableMap.of(FromXmlConfig.SCHEMA_PATH_CONFIG, file.getAbsoluteFile().toURL().toString())
+        ImmutableMap.of(
+          FromXmlConfig.SCHEMA_PATH_CONFIG, file.getAbsoluteFile().toURL().toString(),
+          FromXmlConfig.DECIMAL_SCALE_CONFIG, "2")
     );
   }
 
@@ -60,6 +67,15 @@ public class FromXmlTest {
     );
 
     ConnectRecord record = this.transform.apply(inputRecord);
+
+    Schema priceSchema = record.valueSchema().field("book").schema().valueSchema().field("price").schema();
+    Struct books = (Struct) record.value();
+    Struct firstBook = (Struct) books.getArray("book").get(0);
+
+    assertEquals("org.apache.kafka.connect.data.Decimal", priceSchema.name());
+    assertEquals("2", priceSchema.parameters().get("scale"));
+    assertEquals(3, ((BigDecimal)firstBook.get("price")).scale());
+    assertEquals(new BigDecimal("44.951"), firstBook.get("price"));
   }
 
 }
