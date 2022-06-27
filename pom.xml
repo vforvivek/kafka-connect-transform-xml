@@ -94,6 +94,12 @@
             <artifactId>guava</artifactId>
             <version>30.1.1-jre</version>
         </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.22.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -126,4 +132,11 @@
             </plugin>
         </plugins>
     </build>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub deepshore Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/deepshore/kafka-connect-transform-xml</url>
+        </repository>
+    </distributionManagement>
 </project>
