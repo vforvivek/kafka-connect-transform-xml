@@ -31,6 +31,7 @@ import java.util.Map;
 class FromXmlConfig extends AbstractConfig {
 
   public static final String SCHEMA_PATH_CONFIG = "schema.path";
+  public static final String DECIMAL_SCALE_CONFIG = "decimal.scale";
   public static final String PACKAGE_CONFIG = "package";
   public static final String XJC_OPTIONS_STRICT_CHECK_CONFIG = "xjc.options.strict.check.enabled";
   public static final String XJC_OPTIONS_AUTOMATIC_NAME_CONFLICT_RESOLUTION_ENABLED_CONFIG = "xjc.options.automatic.name.conflict.resolution.enabled";
@@ -38,6 +39,7 @@ class FromXmlConfig extends AbstractConfig {
   public static final String XPATH_FOR_RECORD_KEY_CONFIG = "xpath.for.record.key";
   static final String SCHEMA_PATH_DOC = "Urls to the schemas to load. http and https paths are supported";
   static final String PACKAGE_DOC = "The java package xjc will use to generate the source code in. This name will be applied to the resulting schema";
+  static final String DECIMAL_SCALE_DOC = "The default decimal scale";
   static final String XJC_OPTIONS_STRICT_CHECK_DOC = "xjc.options.strict.check.enabled";
   static final String XJC_OPTIONS_AUTOMATIC_NAME_CONFLICT_RESOLUTION_ENABLED_DOC = "xjc.options.automatic.name.conflict.resolution.enabled";
   static final String XJC_OPTIONS_VERBOSE_DOC = "xjc.options.verbose.enabled";
@@ -45,6 +47,7 @@ class FromXmlConfig extends AbstractConfig {
   public final List<URL> schemaUrls;
   public final String xjcPackage;
   public final boolean optionsStrictCheck;
+  public final int decimalScale;
   public final boolean optionsAutomaticNameConflictResolution;
   public final String xpathForRecordKey;
 
@@ -52,6 +55,7 @@ class FromXmlConfig extends AbstractConfig {
     super(config(), originals);
     this.schemaUrls = ConfigUtils.urls(this, SCHEMA_PATH_CONFIG);
     this.xjcPackage = getString(PACKAGE_CONFIG);
+    this.decimalScale = getInt(DECIMAL_SCALE_CONFIG);
     this.optionsStrictCheck = getBoolean(XJC_OPTIONS_STRICT_CHECK_CONFIG);
     this.optionsAutomaticNameConflictResolution = getBoolean(XJC_OPTIONS_AUTOMATIC_NAME_CONFLICT_RESOLUTION_ENABLED_CONFIG);
     this.xpathForRecordKey = getString(XPATH_FOR_RECORD_KEY_CONFIG);
@@ -73,6 +77,12 @@ class FromXmlConfig extends AbstractConfig {
                 .documentation(PACKAGE_DOC)
                 .importance(ConfigDef.Importance.HIGH)
                 .defaultValue(FromXmlConfig.class.getPackage().getName() + ".model")
+                .build()
+        ).define(
+            ConfigKeyBuilder.of(DECIMAL_SCALE_CONFIG, ConfigDef.Type.INT)
+                .documentation(DECIMAL_SCALE_DOC)
+                .importance(ConfigDef.Importance.LOW)
+                .defaultValue(4)
                 .build()
         ).define(
             ConfigKeyBuilder.of(XJC_OPTIONS_STRICT_CHECK_CONFIG, ConfigDef.Type.BOOLEAN)

@@ -86,8 +86,11 @@ public class XSDCompiler implements Closeable {
 
     SchemaCompiler schemaCompiler = XJC.createSchemaCompiler();
 
+    KafkaConnectPlugin plugin = new KafkaConnectPlugin();
+    plugin.setDecimalScale(config.decimalScale);
+
     Options options = schemaCompiler.getOptions();
-    options.activePlugins.add(new KafkaConnectPlugin());
+    options.activePlugins.add(plugin);
     options.strictCheck = this.config.optionsStrictCheck;
 
     options.automaticNameConflictResolution = this.config.optionsAutomaticNameConflictResolution;
