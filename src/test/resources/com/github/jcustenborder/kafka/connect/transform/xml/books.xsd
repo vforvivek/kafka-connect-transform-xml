@@ -18,7 +18,7 @@
             <xsd:element name="author"   type="xsd:string"/>
             <xsd:element name="title"    type="xsd:string"/>
             <xsd:element name="genre"    type="xsd:string"/>
-            <xsd:element name="price"    type="xsd:decimal" />
+            <xsd:element name="price"    type="xsd:float" />
             <xsd:element name="pub_date" type="xsd:date" />
             <xsd:element name="review"   type="xsd:string"/>
         </xsd:sequence>
