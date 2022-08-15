@@ -67,12 +67,12 @@
         <dependency>
             <groupId>com.github.jcustenborder.kafka.connect</groupId>
             <artifactId>xjc-kafka-connect-plugin</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>0.2.24</version>
         </dependency>
         <dependency>
             <groupId>com.github.jcustenborder.kafka.connect</groupId>
             <artifactId>kafka-connect-xml</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>0.2.24</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
@@ -134,4 +134,11 @@
             <url>https://maven.pkg.github.com/deepshore/kafka-connect-transform-xml</url>
         </repository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>confluent</id>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+    </repositories>
 </project>
