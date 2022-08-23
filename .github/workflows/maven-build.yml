@@ -33,9 +33,12 @@ jobs:
           GH_DEPLOY_USERNAME: ${{ env.GITHUB_REPOSITORY_OWNER }}
           GH_DEPLOY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: show artifacts
+        run: ls -lah target/components/packages
+
       - name: Release
         uses: fnkr/github-action-ghr@v1
         if: startsWith(github.ref, 'refs/tags/')
         env:
-          GHR_PATH: target/components/packages/${{ github.event.repository.name }}-${GITHUB_REF_NAME#v}.zip
+          GHR_PATH: target/components/packages/${{ github.event.repository.name }}-${{ env.GITHUB_REF_NAME }}.zip
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
