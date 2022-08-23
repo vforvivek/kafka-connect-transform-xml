@@ -37,7 +37,7 @@ jobs:
         run: |
           cd target/components/packages
           cp *.zip ${{ github.event.repository.name }}-${{ github.ref_name }}.zip
-          ls -lah target/components/packages
+          ls -lah
 
       - name: Release
         uses: fnkr/github-action-ghr@v1
