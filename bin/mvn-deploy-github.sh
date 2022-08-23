@@ -15,4 +15,4 @@ else
   mvn -s ${MVN_SETTINGS_FILE} release:prepare -DreleaseVersion=${GITHUB_REF_NAME#v} || true
 fi
 
-#mvn -s ${MVN_SETTINGS_FILE} --batch-mode deploy -Dlicense.skip=true
+mvn -s ${MVN_SETTINGS_FILE} --batch-mode deploy -Dlicense.skip=true
