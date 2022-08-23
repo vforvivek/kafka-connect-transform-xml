@@ -8,7 +8,9 @@ sed -e "s/GH_REPO/${GH_REPO}/g" ${MVN_SETTINGS_TEMPLATE_FILE} > ${MVN_SETTINGS_F
 sed -e "s/GH_DEPLOY_USERNAME/${GH_DEPLOY_USERNAME}/g" ${MVN_SETTINGS_TEMPLATE_FILE} > ${MVN_SETTINGS_FILE}
 sed -e "s/GH_DEPLOY_TOKEN/${GH_DEPLOY_TOKEN}/g" ${MVN_SETTINGS_TEMPLATE_FILE} > ${MVN_SETTINGS_FILE}
 
-if [[ $GITHUB_REF_NAME == v* ]]; then
+if [ -z ${GITHUB_REF_NAME+x} ]; then
+  echo "no release tag. skipping release prepare...";
+else
   echo "creating release version ${GITHUB_REF_NAME#v}"
   mvn -s ${MVN_SETTINGS_FILE} release:prepare -DreleaseVersion=${GITHUB_REF_NAME#v} || true
 fi
