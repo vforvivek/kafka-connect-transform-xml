@@ -3,7 +3,7 @@ name: 'verify-build'
 on:
   push:
     tags:
-      - v*
+      - *
     branches:
       - custombuild
 
