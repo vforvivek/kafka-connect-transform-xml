@@ -71,3 +71,4 @@ transforms.xml_value.schema.path=http://web.address/my.xsd
 "transforms.xml_value.type": "com.github.jcustenborder.kafka.connect.transform.xml.FromXml$Value",
 "transforms.xml_value.schema.path": "< Configure me >"
 ```
+
